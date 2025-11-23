@@ -1,2 +1,2 @@
-# Math library
-Reseni ulohy na OOP - Math library
+# Minimax algorithmus
+Reseni ulohy na Minimax algorithmus
