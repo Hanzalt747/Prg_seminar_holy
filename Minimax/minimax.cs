@@ -8,7 +8,7 @@ namespace MiniMax_Nim_2
     {
         static void Main(string[] args)
         {
-            var initialPiles = new List<int> { 2, 2 };
+            var initialPiles = new List<int> { 2, 2};
             bool botStarts = true;
 
             var game = new NimGame(initialPiles, botStarts);
@@ -81,7 +81,7 @@ namespace MiniMax_Nim_2
         }
 
         public GameState PlayTurn()
-        {           
+        {
             PrintGameState();
 
             if (_isBotTurn)
@@ -98,40 +98,98 @@ namespace MiniMax_Nim_2
             _isBotTurn = !_isBotTurn;
 
             if (_state.MatchesInGame == 0)
-                if (_isBotTurn)
-                    return GameState.BotWon;
-                else
-                    return GameState.HumanWon;
-            else
-                return GameState.Ongoing;
+            	if (_isBotTurn)
+								return GameState.BotWon;
+							else
+								return GameState.HumanWon;
+						else 
+            	return GameState.Ongoing;
         }
 
+        // Vybere nejlepsi tah pro pocitac podle minimaxu.
         private Tuple<int, byte> GetBestBotMove()
         {
-            byte matchesToRemove = 1; // v rozsahu 1-2
+            int bestPileIndex = -1;
+            byte bestMatchesToRemove = 1;
+            int bestScore = int.MinValue;
 
-            int score = minimax(_state.Piles.ToList(), 10, true);
-
-            int minimax(List<int> piles, int depth, bool maximizingPlayer)
+            // Projdeme vsechny mozne tahy (pro kazdou hromadku lze odebrat 1 az N sirek).
+            for (int i = 0; i < _state.Piles.Count; i++)
             {
-            	int bestPile = 0; 
-		if (depth==0 || piles.Sum()==0) {
-			return bestPile;
-		}
-		if (maximizingPlayer==true) {
-			bestPile = -1;
-			foreach (int pile in piles) {
-				bestPile = piles.Max()
-			}
-		} else {
-			bestPile = 1;
-		}
+                int pileSize = _state.Piles[i];
+                if (pileSize == 0)
+                    continue;
 
-		return bestPile;
-                // TODO: implementujte :)
+                for (int matches = 1; matches <= pileSize; matches++)
+                {
+                    var newPiles = new List<int>(_state.Piles);
+                    newPiles[i] -= matches;
+
+                    // Po tahu nasleduje hrac proto volame minimax s minimizing hracem.
+                    int score = Minimax(newPiles, isBotTurn: false);
+
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        bestPileIndex = i;
+                        bestMatchesToRemove = (byte)matches;
+                    }
+                }
             }
 
-            return new Tuple<int, byte>(bestPile, matchesToRemove);
+            if (bestPileIndex == -1)
+                throw new InvalidOperationException("Bot nema zadny platny tah.");
+
+            return new Tuple<int, byte>(bestPileIndex, bestMatchesToRemove);
+        }
+
+        /// Minimax algoritmus nad stavem hry. Rekurzivne uvazuje vsechny mozne tahy.
+        /// Kladne skore znamena vyhodu pro pocitac, zaporne pro hrace.
+        private int Minimax(List<int> piles, bool isBotTurn)
+        {
+            bool noMatchesLeft = piles.All(p => p == 0);
+            if (noMatchesLeft)
+            {
+                // Souper prave vzal posledni sirku, takye aktualni hrac vyhral.
+                return isBotTurn ? 1 : -1;
+            }
+
+            if (isBotTurn)
+            {
+                int maxEval = int.MinValue;
+                for (int i = 0; i < piles.Count; i++)
+                {
+                    if (piles[i] == 0)
+                        continue;
+
+                    for (int matches = 1; matches <= piles[i]; matches++)
+                    {
+                        var newPiles = new List<int>(piles);
+                        newPiles[i] -= matches;
+                        maxEval = Math.Max(maxEval, Minimax(newPiles, isBotTurn: false));
+                    }
+                }
+
+                return maxEval;
+            }
+            else
+            {
+                int minEval = int.MaxValue;
+                for (int i = 0; i < piles.Count; i++)
+                {
+                    if (piles[i] == 0)
+                        continue;
+
+                    for (int matches = 1; matches <= piles[i]; matches++)
+                    {
+                        var newPiles = new List<int>(piles);
+                        newPiles[i] -= matches;
+                        minEval = Math.Min(minEval, Minimax(newPiles, isBotTurn: true));
+                    }
+                }
+
+                return minEval;
+            }
         }
 
         private void PrintGameState()
