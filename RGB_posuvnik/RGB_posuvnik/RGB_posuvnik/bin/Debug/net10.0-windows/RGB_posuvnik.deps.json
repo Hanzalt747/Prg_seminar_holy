@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "RGB_posuvnik/1.0.0": {
+        "runtime": {
+          "RGB_posuvnik.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "RGB_posuvnik/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
